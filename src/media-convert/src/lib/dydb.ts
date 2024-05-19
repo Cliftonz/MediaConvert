@@ -9,13 +9,17 @@ const globalForDyDB = global as unknown as {
 export const dydb = globalForDyDB.dydb || createClient();
 
 function createClient() {
-    return new DynamoDBClient({
+
+    const config = {
         region: env.AWS_REGION,
         credentials: {
             accessKeyId: env.AWS_ACCESS_KEY,
             secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
-        }
-    });
+        },
+        endpoint: env.LOCALSTACK_URL ?? undefined,
+    }
+
+    return new DynamoDBClient();
 }
 
 if (process.env.NODE_ENV !== 'production') globalForDyDB.dydb = dydb;

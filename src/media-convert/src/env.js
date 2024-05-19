@@ -15,6 +15,7 @@ export const env = createEnv({
     MEDIACONVERT_URL: z.string().url(),
     INPUT_BUCKET: z.string(),
     OUTPUT_BUCKET: z.string(),
+    LOCALSTACK_URL: z.string().url().optional(),
   },
 
   /**
@@ -39,6 +40,7 @@ export const env = createEnv({
     MEDIACONVERT_URL: process.env.MEDIACONVERT_URL,
     INPUT_BUCKET: process.env.INPUT_BUCKET,
     OUTPUT_BUCKET: process.env.OUTPUT_BUCKET,
+    LOCALSTACK_URL: process.env.LOCALSTACK_DYDB_URL,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

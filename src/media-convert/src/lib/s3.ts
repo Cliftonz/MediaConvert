@@ -14,7 +14,8 @@ function createClient() {
         credentials: {
             accessKeyId: env.AWS_ACCESS_KEY,
             secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
-        }
+        },
+        endpoint: env.LOCALSTACK_URL ?? undefined,
     });
 }
 

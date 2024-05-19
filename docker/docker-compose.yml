@@ -4,11 +4,10 @@ services:
     container_name: "localstack_main"
     image: localstack/localstack:latest
     ports:
-      - '4566:4566'
-      - '4571:4571'
-      - '8080:8080'
+      - '4566-4599:4566-4599'
+      - '${LAMBDA_EXECUTOR_PORT-9001}:${LAMBDA_EXECUTOR_PORT-9001}'
     environment:
-      - SERVICES=s3,dynamodb
+      - SERVICES=s3,dynamodb,lambda
       - DEBUG=1
       - DATA_DIR=/localstack/data   # Update DATA_DIR to point to new directory
       - PORT_WEB_UI=8080

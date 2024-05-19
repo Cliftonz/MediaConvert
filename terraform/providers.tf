@@ -3,7 +3,8 @@ provider "aws" {
 
   default_tags {
     tags = {
-      "project": "mediaConvert"
+      "project": "mediaConvert",
+      "owner": "zac@novu.co"
     }
   }
 }

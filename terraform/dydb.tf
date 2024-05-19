@@ -1,4 +1,4 @@
-resource "aws_dynamodb_table" "status-dynamodb-table" {
+resource "aws_dynamodb_table" "status_dynamodb_table" {
   name           = "MediaConvert-status"
   billing_mode   = "PAY_PER_REQUEST"
 
@@ -14,31 +14,6 @@ resource "aws_dynamodb_table" "status-dynamodb-table" {
     name = "fileName"
     type = "S"
   }
-#
-#   attribute {
-#     name = "bucket"
-#     type = "S"
-#   }
-#
-#   attribute {
-#     name = "bucketPath"
-#     type = "S"
-#   }
-#
-#   attribute {
-#     name = "processingStatus"
-#     type = "S"
-#   }
-#
-#   attribute {
-#     name = "status"
-#     type = "S"
-#   }
-#
-#   attribute {
-#     name = "pastJobId"
-#     type = "S"
-#   }
 
   attribute {
     name = "jobId"
@@ -57,7 +32,7 @@ resource "aws_dynamodb_table" "status-dynamodb-table" {
   }
 }
 
-resource "aws_dynamodb_table" "events-dynamodb-table" {
+resource "aws_dynamodb_table" "events_dynamodb_table" {
   name           = "MediaConvert-events"
   billing_mode   = "PAY_PER_REQUEST"
 
@@ -74,43 +49,51 @@ resource "aws_dynamodb_table" "events-dynamodb-table" {
     type = "N"
   }
 
-#   attribute {
-#     name = "project"
-#     type = "S"
-#   }
-#
-#   attribute {
-#     name = "filename"
-#     type = "S"
-#   }
-#
-#   attribute {
-#     name = "jobid"
-#     type = "S"
-#   }
-#
-#   attribute {
-#     name = "event"
-#     type = "S"
-#   }
-#
-#   attribute {
-#     name = "status"
-#     type = "S"
-#   }
-
-#   attribute {
-#     name = "timestamp"
-#     type = "S"
-#   }
-#
-#   attribute {
-#     name = "path"
-#     type = "S"
-#   }
-
   tags = {
     Environment = "production"
     project = "mediaConvert"
   }
+}
+
+resource "aws_dynamodb_table_item" "status_projects" {
+#   count = var.init ? 1 : 0
+  table_name = aws_dynamodb_table.status_dynamodb_table.name
+  hash_key   = aws_dynamodb_table.status_dynamodb_table.hash_key
+  range_key  = aws_dynamodb_table.status_dynamodb_table.range_key
+
+  item = <<ITEM
+{
+  "project": {"S": "list"},
+  "fileName": {"S": "projects"},
+  "list": {"L": []}
+}
+ITEM
+
+  lifecycle {
+    prevent_destroy = true
+  }
+
+}
+
+resource "aws_dynamodb_table_item" "status_status" {
+#   count = var.init ? 1 : 0
+  table_name = aws_dynamodb_table.status_dynamodb_table.name
+  hash_key   = aws_dynamodb_table.status_dynamodb_table.hash_key
+  range_key  = aws_dynamodb_table.status_dynamodb_table.range_key
+
+  item = <<ITEM
+{
+  "project": {"S": "list"},
+  "fileName": {"S": "status"},
+  "totalProjects": {"N": "0"},
+  "completedConversions": {"N": "0"},
+  "inProgress": {"N": "0"},
+  "archived": {"N": "0"}
+}
+ITEM
+
+  lifecycle {
+    prevent_destroy = true
+  }
+
 }

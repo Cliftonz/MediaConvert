@@ -5,8 +5,9 @@ import {s3} from "~/lib/s3";
 import {PutObjectCommand} from "@aws-sdk/client-s3";
 import {getSignedUrl} from "@aws-sdk/s3-request-presigner";
 import {createProjectFile, getProjectFiles, updateProjectFileStatus} from "~/dal/files";
-import {ContainerFormat, ContainerFormatZod, inputBucket} from "~/dal/constants";
+import { ContainerFormatZod, inputBucket} from "~/dal/constants";
 import {startJobProcessing} from "~/dal/processing";
+import {ContainerFormat} from "~/components/constants";
 
 export const fileRouter = createTRPCRouter({
     createPreSignedUrl: publicProcedure
@@ -64,7 +65,7 @@ export const fileRouter = createTRPCRouter({
 
         }),
 
-        createProcessingJob: publicProcedure
+    createProcessingJob: publicProcedure
         .input(
             z.object({
                 project: z.string(),
@@ -75,9 +76,9 @@ export const fileRouter = createTRPCRouter({
 
             // create item in dydb with status acknowledged for each input
             await startJobProcessing({
-                project: input.project,
-                fileName: input.fileName,
-                format: input.format
+                project: input.project as string,
+                fileName: input.fileName as string,
+                format: input.format as ContainerFormat
             })
 
         }),

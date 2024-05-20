@@ -65,7 +65,7 @@ export function FileUploaderPage(props: FileUploaderPageProps) {
                             if (f.name === file.name) {  // for the file that has completed uploading
                                 return {
                                     ...f,  // copy existing file info
-                                    uploadProgress: 100,  // set new uploadProgress value
+                                    uploadProgress: progress,  // set new uploadProgress value
                                     rate: progressEvent.rate  // set new rate value
                                 };
                             } else {

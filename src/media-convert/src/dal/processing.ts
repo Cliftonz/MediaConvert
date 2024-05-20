@@ -1,13 +1,15 @@
 import {dydb} from "~/lib/dydb";
 import {GetItemCommand, PutItemCommand} from "@aws-sdk/client-dynamodb";
 import {
-    CreateJobCommand, CreateJobCommandInput,
+    CreateJobCommand,
+    CreateJobCommandInput,
     CreateJobTemplateCommand,
     CreateJobTemplateCommandInput,
     ListJobTemplatesCommand
 } from "@aws-sdk/client-mediaconvert";
 import {env} from "~/env";
-import {baseUrl, ContainerFormat, inputBucket, outputBucket, statusTable} from "~/dal/constants";
+import {baseUrl, inputBucket, outputBucket, statusTable} from "~/dal/constants";
+import {ContainerFormat} from "~/components/constants";
 import {mediaConvert} from "~/lib/mediaConvert";
 
 async function checkTemplateExistsInDynamoDB() {
@@ -30,7 +32,7 @@ async function checkTemplateExistsInDynamoDB() {
             && response.Item.project.S == 'MediaConvert') {
 
             for (let template in jobTemplateNames) {
-                if(response.Item[template] !== undefined
+                if (response.Item[template] !== undefined
                     && response.Item[template]?.BOOL !== undefined
                     && response.Item[template]?.BOOL !== true) {
                     returnValue = true;
@@ -56,7 +58,7 @@ async function checkIfJobTemplatesExists() {
     try {
         const response = await mediaConvert.send(new ListJobTemplatesCommand(params));
 
-        if ( response.JobTemplates ){
+        if (response.JobTemplates) {
             // Filter out names existing in jobTemplateNames.
             return jobTemplateNames.filter(
                 jobTemplateName => !response.JobTemplates?.some(
@@ -84,9 +86,9 @@ async function createJobTemplate(jobTemplateName: string) {
 
         jobTemplateParams["Queue"] = `arn:aws:mediaconvert:${env.AWS_REGION}:${env.AWS_ACCOUNT_ID}:queues/Default`;
 
-        await mediaConvert.send( new CreateJobTemplateCommand(jobTemplateParams));
+        await mediaConvert.send(new CreateJobTemplateCommand(jobTemplateParams));
         return true;
-    } catch (err){
+    } catch (err) {
         console.error(err);
         return false;
     }
@@ -94,7 +96,7 @@ async function createJobTemplate(jobTemplateName: string) {
 
 async function updateDynamoDB(templateName: string) {
     const dynamoDbParams = {
-        TableName : statusTable,
+        TableName: statusTable,
         Item: {
             "project": {S: 'MediaConvert'},
             "fileName": {S: 'status'},
@@ -105,7 +107,7 @@ async function updateDynamoDB(templateName: string) {
 
     try {
         await dydb.send(new PutItemCommand(dynamoDbParams));
-    } catch(err) {
+    } catch (err) {
         console.error(err);
     }
 }
@@ -120,23 +122,23 @@ export async function startJobProcessing(props: IStartJobProcessingParam): Promi
 
     const template_exists_in_dynamodb = await checkTemplateExistsInDynamoDB();
 
-    if(!template_exists_in_dynamodb){
+    if (!template_exists_in_dynamodb) {
         console.log("Job template not found in DynamoDB.");
 
         // get array of job template names that do not exist in media convert
         const templates_not_in_mediaconvert = await checkIfJobTemplatesExists();
 
         // If there are job templates name that do not exist, then create them
-        if( templates_not_in_mediaconvert !== undefined && templates_not_in_mediaconvert.length > 0){
+        if (templates_not_in_mediaconvert !== undefined && templates_not_in_mediaconvert.length > 0) {
             console.log("Some job templates not found in MediaConvert. Starting their creation...");
 
             // Loop over each job template name that doesn't exist in MediaConvert and create it
-            for(const jobTemplateName of templates_not_in_mediaconvert){
+            for (const jobTemplateName of templates_not_in_mediaconvert) {
                 console.log(`Creating Job Template : ${jobTemplateName}`);
 
                 const job_template_created = await createJobTemplate(jobTemplateName);
 
-                if(job_template_created){
+                if (job_template_created) {
                     await updateDynamoDB(jobTemplateName);
                     console.log(`Job template ${jobTemplateName} created and uploaded the record to DynamoDB`);
                 }

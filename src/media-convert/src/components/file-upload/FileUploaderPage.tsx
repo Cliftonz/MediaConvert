@@ -2,10 +2,12 @@
 import React, {useState} from "react";
 import {Separator} from "~/components/ui/separator";
 import {PendingFiles} from "~/components/file-upload/PendingFiles";
-import axios, {AxiosProgressEvent, CancelToken} from "axios";
+import axios, {AxiosProgressEvent} from "axios";
 import {api} from "~/trpc/react";
 import {toast} from "sonner";
 import FileUploader from "~/components/file-upload/FileUploader";
+import {startJobProcessing} from "~/dal/processing";
+import {ContainerFormat} from "~/dal/constants";
 
 
 export interface IFileUpload {
@@ -27,6 +29,7 @@ export function FileUploaderPage(props: FileUploaderPageProps) {
 
     const createFileUrl = api.files.createPreSignedUrl.useMutation();
     const updateFile = api.files.updateFileStatus.useMutation();
+    const createProccesingJob = api.files.createProcessingJob.useMutation();
 
     async function handleMultipleSubmit() {
 
@@ -89,6 +92,16 @@ export function FileUploaderPage(props: FileUploaderPageProps) {
                     status: "Uploaded"
                 })
                 setFiles(files => files.filter(pendingFile => pendingFile.name !== file.name));
+                createProccesingJob.mutate({
+                    project: props.project,
+                    fileName: file.name,
+                    format: ContainerFormat.MP4
+                })
+                updateFile.mutate({
+                    project: props.project,
+                    fileName: file.name,
+                    status: "Converting"
+                })
             }
         }
     }

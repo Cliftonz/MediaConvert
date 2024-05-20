@@ -44,7 +44,7 @@ export const env = createEnv({
     OUTPUT_BUCKET: process.env.OUTPUT_BUCKET,
     LOCALSTACK_URL: process.env.LOCALSTACK_DYDB_URL,
     AWS_ACCOUNT_ID: process.env.AWS_ACCOUNT_ID,
-    AWS_MEDIACONVERT_ARN: process.env.AWS_MEDIACONVERT_URL,
+    AWS_MEDIACONVERT_ARN: process.env.AWS_MEDIACONVERT_ARN,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

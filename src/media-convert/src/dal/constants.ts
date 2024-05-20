@@ -1,4 +1,6 @@
 import {env} from "~/env";
+import * as z from 'zod';
+import {ZodEnum} from "zod";
 
 const eventTable =  "MediaConvert-events"
 const statusTable = "MediaConvert-status"
@@ -32,3 +34,13 @@ enum ContainerFormat {
     RAW = "RAW",
     WEBM = "WEBM"
 }
+
+// Explicitly type the tuple
+type ContainerFormatTuple = [ContainerFormat, ...ContainerFormat[]];
+
+const containerFormatValues = Object.values(ContainerFormat) as ContainerFormat[];
+
+// Hack to convert array to tuple
+const toTuple = <T extends ContainerFormat>(...args: T[]): ContainerFormatTuple => args as any;
+
+export const ContainerFormatZod: ZodEnum<ContainerFormatTuple> = z.enum(toTuple(...containerFormatValues));

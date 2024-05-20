@@ -1,13 +1,13 @@
 import {dydb} from "~/lib/dydb";
 import {GetItemCommand, PutItemCommand} from "@aws-sdk/client-dynamodb";
 import {
-    CreateJobCommand,
+    CreateJobCommand, CreateJobCommandInput,
     CreateJobTemplateCommand,
     CreateJobTemplateCommandInput,
     ListJobTemplatesCommand
 } from "@aws-sdk/client-mediaconvert";
 import {env} from "~/env";
-import {baseUrl, inputBucket, statusTable} from "~/dal/constants";
+import {baseUrl, ContainerFormat, inputBucket, outputBucket, statusTable} from "~/dal/constants";
 import {mediaConvert} from "~/lib/mediaConvert";
 
 async function checkTemplateExistsInDynamoDB() {
@@ -23,12 +23,23 @@ async function checkTemplateExistsInDynamoDB() {
 
         let response = await dydb.send(new GetItemCommand(params))
 
-        return response.Item !== undefined
+        let returnValue = false
+
+        if (response.Item !== undefined
             && response.Item.project !== undefined
-            && response.Item.project.S == 'MediaConvert'
-            && response.Item.tomp4 !== undefined
-            && response.Item.tomp4.BOOL !== undefined
-            && response.Item.tomp4.BOOL ;
+            && response.Item.project.S == 'MediaConvert') {
+
+            for (let template in jobTemplateNames) {
+                if(response.Item[template] !== undefined
+                    && response.Item[template]?.BOOL !== undefined
+                    && response.Item[template]?.BOOL !== true) {
+                    returnValue = true;
+                    break;
+                }
+            }
+        }
+
+        return returnValue;
 
     } catch (err) {
         console.error(err);
@@ -81,15 +92,16 @@ async function createJobTemplate(jobTemplateName: string) {
     }
 }
 
-async function updateDynamoDB(){
+async function updateDynamoDB(templateName: string) {
     const dynamoDbParams = {
         TableName : statusTable,
         Item: {
             "project": {S: 'MediaConvert'},
             "fileName": {S: 'status'},
-            "tomp4": {BOOL: true}
         }
     };
+    // TODO: add templatename bool to the pararms
+    // dynamoDbParams.Item[templateName] = {BOOL: true}
 
     try {
         await dydb.send(new PutItemCommand(dynamoDbParams));
@@ -101,7 +113,7 @@ async function updateDynamoDB(){
 interface IStartJobProcessingParam {
     project: string;
     fileName: string;
-
+    format: ContainerFormat;
 }
 
 export async function startJobProcessing(props: IStartJobProcessingParam): Promise<void> {
@@ -125,7 +137,7 @@ export async function startJobProcessing(props: IStartJobProcessingParam): Promi
                 const job_template_created = await createJobTemplate(jobTemplateName);
 
                 if(job_template_created){
-                    await updateDynamoDB();
+                    await updateDynamoDB(jobTemplateName);
                     console.log(`Job template ${jobTemplateName} created and uploaded the record to DynamoDB`);
                 }
             }
@@ -133,26 +145,24 @@ export async function startJobProcessing(props: IStartJobProcessingParam): Promi
     }
 
 
-    const jobParams: CreateJobCommand = {
-        Role: "arn:aws:iam::111122223333:role/MediaConvert_Default_Role", // replace with your IAM Role
-        JobTemplate: "JobTemplateName", // replace with your job template name
-        Queue: `arn:aws:mediaconvert:${env.AWS_REGION}:${env.AWS_ACCOUNT_ID}:queues/Default`, // replace with your queue ARN
+    const jobParams: CreateJobCommandInput = {
+        Role: env.AWS_MEDIACONVERT_ARN,
+        JobTemplate: `convert_to_${props.format.toString()}`,
         Settings: {
             Inputs: [
                 {
                     FileInput: `s3://${inputBucket}/${props.project}/${props.fileName}`, // Replace with your S3 bucket and file name
                 },
             ],
-            Outputs: [
-                {
-                    ContainerSettings: {
-                        Container: "MP4", // replace with desired format like "M3U8", "MP4", "MOV", "TS", etc.
-                    },
+            OutputGroups: [{
+                Name: "MP4",
+                OutputGroupSettings: {
+                    Type: "FILE_GROUP_SETTINGS",
+                    FileGroupSettings: {
+                        Destination: `s3://${outputBucket}/${props.project}/${props.fileName}`
+                    }
                 },
-            ],
-        },
-        AccelerationSettings: {
-            Mode: 'ENABLED'
+            }],
         },
     };
 

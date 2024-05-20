@@ -1,14 +1,10 @@
 import {
-    DeleteItemCommand, GetItemCommand,
     PutItemCommand,
     QueryCommand,
-    ScanCommand,
     UpdateItemCommand
 } from "@aws-sdk/client-dynamodb";
 import {dydb} from "~/lib/dydb";
-import {statusTable} from "~/dal/constants";
-import {mediaConvert} from "~/lib/mediaConvert";
-import {CreateJobCommand} from "@aws-sdk/client-mediaconvert";
+import { statusTable} from "~/dal/constants";
 
 interface createProjectFileParam {
     project: string
@@ -17,6 +13,7 @@ interface createProjectFileParam {
 }
 
 export async function createProjectFile(props: createProjectFileParam): Promise<void> {
+
     const createCommand = new PutItemCommand({
         TableName: statusTable,
         Item: {
@@ -104,44 +101,4 @@ export async function getProjectFiles(project: string): Promise<getProjectFilesR
 }
 
 
-interface IStartJobProcessingParam {
-    project: string;
-    fileName: string;
-
-}
-
-export async function startJobProcessing(props: IStartJobProcessingParam): Promise<void> {
-
-    const jobParams = {
-        Role: "arn:aws:iam::111122223333:role/MediaConvert_Default_Role", // replace with your IAM Role
-        JobTemplate: "JobTemplateName", // replace with your job template name
-        Queue: "arn:aws:mediaconvert:us-west-2:111122223333:queues/ExampleQueue", // replace with your queue ARN
-        Settings: {
-            Inputs: [
-                {
-                    FileInput: "s3://BUCKET_NAME/FILE_NAME", // Replace with your S3 bucket and file name
-                    // Adjust input settings according to your needs
-                },
-            ],
-            Outputs: [
-                {
-                    ContainerSettings: {
-                        Container: "MP4", // replace with desired format like "M3U8", "MP4", "MOV", "TS", etc.
-                    },
-                },
-            ],
-        },
-    };
-
-    const command = new CreateJobCommand(jobParams);
-
-    try {
-        const response = await mediaConvert.send(command);
-        console.log(response);
-    } catch (err) {
-        console.error(err);
-    }
-
-
-}
 

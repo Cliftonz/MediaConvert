@@ -16,6 +16,7 @@ export const env = createEnv({
     INPUT_BUCKET: z.string(),
     OUTPUT_BUCKET: z.string(),
     LOCALSTACK_URL: z.string().url().optional(),
+    AWS_ACCOUNT_ID: z.string()
   },
 
   /**
@@ -41,6 +42,7 @@ export const env = createEnv({
     INPUT_BUCKET: process.env.INPUT_BUCKET,
     OUTPUT_BUCKET: process.env.OUTPUT_BUCKET,
     LOCALSTACK_URL: process.env.LOCALSTACK_DYDB_URL,
+    AWS_ACCOUNT_ID: process.env.AWS_ACCOUNT_ID,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

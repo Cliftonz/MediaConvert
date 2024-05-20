@@ -31,7 +31,7 @@ interface VercelInviteUserEmailProps {
 }
 
 const baseUrl = process.env.VERCEL_URL
-  ? `https://anonympia.vercel.app`
+  ? `https://mediaconvert.vercel.app`
   : 'http://localhost:4000';
 
 export const TranscodedVideo = ({ firstName, lastName }: any) => {

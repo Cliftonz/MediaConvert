@@ -6,8 +6,7 @@ import axios, {AxiosProgressEvent} from "axios";
 import {api} from "~/trpc/react";
 import {toast} from "sonner";
 import FileUploader from "~/components/file-upload/FileUploader";
-import {startJobProcessing} from "~/dal/processing";
-import {ContainerFormat} from "~/dal/constants";
+import {ContainerFormat} from "~/components/constants";
 
 
 export interface IFileUpload {
@@ -85,18 +84,23 @@ export function FileUploaderPage(props: FileUploaderPageProps) {
 
             if (file?.preSignedUrl != null) {
                 const resp = await axios.put(file.preSignedUrl, file.file, config);
+
                 console.log(`upload complete: ${resp.status}`);
+
                 updateFile.mutate({
                     project: props.project,
                     fileName: file.name,
                     status: "Uploaded"
                 })
+
                 setFiles(files => files.filter(pendingFile => pendingFile.name !== file.name));
+
                 createProccesingJob.mutate({
                     project: props.project,
                     fileName: file.name,
                     format: ContainerFormat.MP4
                 })
+
                 updateFile.mutate({
                     project: props.project,
                     fileName: file.name,

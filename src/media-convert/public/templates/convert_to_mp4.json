@@ -56,7 +56,7 @@
     ]
   },
   "AccelerationSettings": {
-    "Mode": "ENABLED"
+    "Mode": "DISABLED"
   },
   "StatusUpdateInterval": "SECONDS_30",
   "Priority": 0,

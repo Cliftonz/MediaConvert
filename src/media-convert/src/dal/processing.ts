@@ -77,31 +77,28 @@ async function createJobTemplate(jobTemplateName: string) {
 
     const templateUrl = `${baseUrl}/templates/${jobTemplateName}.json`;
 
-    try {
+    const response = await fetch(templateUrl);
+    const jobTemplateParams: CreateJobTemplateCommandInput = await response.json();
 
-        const response = await fetch(templateUrl);
-        const jobTemplateParams: CreateJobTemplateCommandInput = await response.json();
+    jobTemplateParams["Queue"] = `arn:aws:mediaconvert:${env.AWS_REGION}:${env.AWS_ACCOUNT_ID}:queues/Default`;
 
-        jobTemplateParams["Queue"] = `arn:aws:mediaconvert:${env.AWS_REGION}:${env.AWS_ACCOUNT_ID}:queues/Default`;
-
-        await mediaConvert.send(new CreateJobTemplateCommand(jobTemplateParams));
-        return true;
-    } catch (err) {
-        console.error(err);
-        return false;
+    const jobTemplateData = await mediaConvert.send(new CreateJobTemplateCommand(jobTemplateParams));
+    if (!jobTemplateData) {
+        return undefined;
     }
+    return jobTemplateData.JobTemplate?.Arn;
 }
 
-async function updateDynamoDB(templateName: string) {
+async function updateDynamoDB(templateName: string, arn: string) {
     const dynamoDbParams = {
         TableName: statusTable,
         Item: {
             "project": {S: 'MediaConvert'},
             "fileName": {S: 'status'},
+            [templateName]: {BOOL: true},
+            [templateName]: {S: arn}
         }
     };
-    // TODO: add templatename bool to the pararms
-    // dynamoDbParams.Item[templateName] = {BOOL: true}
 
     try {
         await dydb.send(new PutItemCommand(dynamoDbParams));
@@ -134,11 +131,13 @@ export async function startJobProcessing(props: IStartJobProcessingParam): Promi
             for (const jobTemplateName of templates_not_in_mediaconvert) {
                 console.log(`Creating Job Template : ${jobTemplateName}`);
 
-                const job_template_created = await createJobTemplate(jobTemplateName);
+                const job_template_created_arn = await createJobTemplate(jobTemplateName);
 
-                if (job_template_created) {
-                    await updateDynamoDB(jobTemplateName);
+                if (job_template_created_arn) {
+                    await updateDynamoDB(jobTemplateName, job_template_created_arn);
                     console.log(`Job template ${jobTemplateName} created and uploaded the record to DynamoDB`);
+                } else {
+                    console.error("Job template could not be created.");
                 }
             }
         }
@@ -147,7 +146,7 @@ export async function startJobProcessing(props: IStartJobProcessingParam): Promi
 
     const jobParams: CreateJobCommandInput = {
         Role: env.AWS_MEDIACONVERT_ARN,
-        JobTemplate: `convert_to_${props.format.toString()}`,
+        JobTemplate: `convert_to_${props.format.toString().toLowerCase()}`,
         Settings: {
             Inputs: [
                 {
@@ -159,7 +158,7 @@ export async function startJobProcessing(props: IStartJobProcessingParam): Promi
                 OutputGroupSettings: {
                     Type: "FILE_GROUP_SETTINGS",
                     FileGroupSettings: {
-                        Destination: `s3://${outputBucket}/${props.project}/${props.fileName}`
+                        Destination: `s3://${outputBucket}/${props.project}/${updateFileExtension(props.fileName,props.format)}`
                     }
                 },
             }],
@@ -176,6 +175,21 @@ export async function startJobProcessing(props: IStartJobProcessingParam): Promi
     }
 
 
+}
+
+const updateFileExtension =(fileName: string, newFormat: ContainerFormat) => {
+    // Get the position of last '.' in fileName
+    const lastDotIndex = fileName.lastIndexOf('.');
+
+    // If lastDotIndex is -1, fileName has no extension, else it has an extension
+    if (lastDotIndex === -1) {
+        // No extension, so just append the new extension
+        // We are assuming here that newFormat will be something like 'MP4', 'WEBM' etc.
+        return fileName + '.' + newFormat.toLowerCase();
+    } else {
+        // There is an extension, so replace it with the new one
+        return fileName.substr(0, lastDotIndex) + '.' + newFormat.toLowerCase();
+    }
 }
 
 

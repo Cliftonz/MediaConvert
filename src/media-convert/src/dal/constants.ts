@@ -23,7 +23,7 @@ const jobTemplateNames = ["convert_to_mp4"]
 
 const baseUrl = process.env.VERCEL_URL
     ? `https://mediaconvert.vercel.app`
-    : 'http://localhost:4000';
+    : 'http://localhost:3000';
 
 
 

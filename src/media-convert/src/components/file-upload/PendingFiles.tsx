@@ -43,7 +43,7 @@ export function PendingFiles(props: PendingFilesProps) {
                                 props.files.map((val) => {
                                     return (
                                         <div key={val.name}
-                                             className="flex items-center justify-between bg-white dark:bg-gray-900 rounded-lg p-3 m-2">
+                                             className="flex items-center justify-between bg-white dark:bg-gray-900 rounded-lg p-3 m-1">
                                             <div className="flex items-center gap-3">
                                                 <FileIcon className="h-6 w-6 text-gray-500 dark:text-gray-400"/>
                                                 <div className="overflow-hidden">

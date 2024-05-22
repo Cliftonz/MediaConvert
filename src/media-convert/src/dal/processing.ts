@@ -158,7 +158,7 @@ export async function startJobProcessing(props: IStartJobProcessingParam): Promi
                 OutputGroupSettings: {
                     Type: "FILE_GROUP_SETTINGS",
                     FileGroupSettings: {
-                        Destination: `s3://${outputBucket}/${props.project}/${updateFileExtension(props.fileName,props.format)}`
+                        Destination: `s3://${outputBucket}/${props.project}/${removeFileExtension(props.fileName)}`
                     }
                 },
             }],
@@ -177,18 +177,17 @@ export async function startJobProcessing(props: IStartJobProcessingParam): Promi
 
 }
 
-const updateFileExtension =(fileName: string, newFormat: ContainerFormat) => {
-    // Get the position of last '.' in fileName
+const removeFileExtension = (fileName: string) => {
+    // Get the position of the last '.' in fileName
     const lastDotIndex = fileName.lastIndexOf('.');
 
     // If lastDotIndex is -1, fileName has no extension, else it has an extension
     if (lastDotIndex === -1) {
-        // No extension, so just append the new extension
-        // We are assuming here that newFormat will be something like 'MP4', 'WEBM' etc.
-        return fileName + '.' + newFormat.toLowerCase();
+        // No extension, so just return the original fileName
+        return fileName;
     } else {
-        // There is an extension, so replace it with the new one
-        return fileName.substr(0, lastDotIndex) + '.' + newFormat.toLowerCase();
+        // There is an extension, so remove it by returning only part before the '.'
+        return fileName.substr(0, lastDotIndex);
     }
 }
 

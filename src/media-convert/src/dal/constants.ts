@@ -15,7 +15,8 @@ export {
     outputBucket,
     baseUrl,
     containerFormatValues,
-    ContainerFormatZod
+    ContainerFormatZod,
+    jobTemplateNames
 }
 
 const jobTemplateNames = ["convert_to_mp4"]

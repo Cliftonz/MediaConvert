@@ -48,10 +48,11 @@ export function PendingFiles(props: PendingFilesProps) {
                                                 <FileIcon className="h-6 w-6 text-gray-500 dark:text-gray-400"/>
                                                 <div className="overflow-hidden">
                                                     <p className="font-medium truncate">{props.truncateName ? truncateFileFunc(val.name, props.truncateLength ?? 10) : val.name}</p>
-                                                    <div>
-                                                        <p className="text-sm text-gray-500 dark:text-gray-400">{convertFileSize(val.size)}</p>
-                                                        {val.uploadProgress > 0 ? <Progress value={val.uploadProgress} />: <></>}
+                                                    <div className="text-sm text-gray-500 dark:text-gray-400 flex flex-row justify-left" >
+                                                        <p >{convertFileSize(val.size)}</p>
+                                                        {val.uploadProgress > 0 && val.rate !== undefined ? <p>{ convertFileSize(val.rate)}/s </p>: <></>}
                                                     </div>
+                                                    {val.uploadProgress > 0 ? <Progress value={val.uploadProgress} />: <></>}
                                                 </div>
                                             </div>
                                             <Button size="sm" variant="outline" onClick={() => {

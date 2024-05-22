@@ -7,6 +7,7 @@ import {api} from "~/trpc/react";
 import {toast} from "sonner";
 import FileUploader from "~/components/file-upload/FileUploader";
 import {ContainerFormat} from "~/components/constants";
+import {Button} from "~/components/ui/button";
 
 
 export interface IFileUpload {
@@ -143,6 +144,15 @@ export function FileUploaderPage(props: FileUploaderPageProps) {
 
     return (
         <div>
+            <Button onClick={() => {
+                createProccesingJob.mutate({
+                    project: "Echo",
+                    fileName: "218e4174-0424-40d3-bd09-5778e82729f3_fa4031b7-55cb-4967-8d5a-34fcabc141b1_restream.mkv",
+                    format: ContainerFormat.MP4
+                })
+            }}>
+                Test Job
+            </Button>
             <div className="flex flex-col  bg-white dark:bg-gray-950 rounded-lg shadow-lg p-6">
                 <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 flex flex-col gap-2">
                     <FileUploader

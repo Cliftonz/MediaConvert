@@ -8,7 +8,7 @@ import {
     ListJobTemplatesCommand
 } from "@aws-sdk/client-mediaconvert";
 import {env} from "~/env";
-import {baseUrl, inputBucket, outputBucket, statusTable} from "~/dal/constants";
+import {baseUrl, inputBucket, jobTemplateNames, outputBucket, statusTable} from "~/dal/constants";
 import {ContainerFormat} from "~/components/constants";
 import {mediaConvert} from "~/lib/mediaConvert";
 
@@ -47,8 +47,6 @@ async function checkTemplateExistsInDynamoDB() {
         console.error(err);
     }
 }
-
-const jobTemplateNames = ["JobTemplateName1", "JobTemplateName2", "JobTemplateName3"]; // Your list of job template names
 
 async function checkIfJobTemplatesExists() {
     const params = {

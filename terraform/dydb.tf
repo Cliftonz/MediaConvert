@@ -69,9 +69,6 @@ resource "aws_dynamodb_table_item" "status_projects" {
 }
 ITEM
 
-  lifecycle {
-    prevent_destroy = true
-  }
 
 }
 
@@ -91,9 +88,5 @@ resource "aws_dynamodb_table_item" "status_status" {
   "archived": {"N": "0"}
 }
 ITEM
-
-  lifecycle {
-    prevent_destroy = true
-  }
 
 }
